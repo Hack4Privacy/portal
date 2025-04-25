@@ -1,0 +1,8 @@
+packages:
+  - '!**/test/**'
+onlyBuiltDependencies:
+  - '@wntr/lx-ui'
+  - core-js-pure
+  - esbuild
+  - exifreader
+  - vue-demi
