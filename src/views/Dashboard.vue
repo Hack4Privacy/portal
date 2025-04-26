@@ -124,7 +124,6 @@ async function actionClicked(actionId) {
 
     try {
       uploading.value = true;
-      console.log(request.value);
       const response = await uploadDocx(request.value.uploadedFile[0].content);
       uploading.value = false;
 
@@ -136,11 +135,10 @@ async function actionClicked(actionId) {
       );
       processing.value = false;
       sensitiveDataFound.value = sensitiveData.data;
-      console.log("Sensitive data found:", sensitiveData);
     } catch (error) {
-      console.error("Validation error:", error);
       notify.pushError(
-        "Please select at least one data category and select a document to sanitize",
+        "Processing error",
+        "An error occurred while processing the document. Please try again later.",
       );
       return;
     } finally {
