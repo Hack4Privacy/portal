@@ -3,6 +3,7 @@ import {
   LxExpander,
   LxFileUploader,
   LxForm,
+  LxLoaderView,
   LxModal,
   LxRichTextDisplay,
   LxRow,
@@ -10,7 +11,21 @@ import {
 } from "@wntr/lx-ui";
 import { ref, computed, onMounted, watch } from "vue";
 import { uploadDocx, findSensitiveData } from "@/services/fileService";
+import useNotifyStore from "@/stores/useNotifyStore";
+import { useVuelidate } from "@vuelidate/core";
+import { required } from "@vuelidate/validators";
 
+const notify = useNotifyStore();
+
+const rules = computed(() => ({
+  selectedCategories: { required },
+  uploadedFile: { required },
+}));
+const request = ref({
+  selectedCategories: [],
+  uploadedFile: null,
+});
+const v = useVuelidate(rules, request);
 const categories = ref([
   {
     id: "personCode",
@@ -85,7 +100,6 @@ const selectedCategories = ref([
 ]);
 
 const expanderOpen = ref(true);
-const uploadedFile = ref(null);
 
 const sampleMarkdown = ref("");
 const documentPreviewModal = ref(null);
@@ -95,38 +109,64 @@ const filterCategoriesText = computed(() => {
   return `Select sensitive data types to scan for (${selected} of ${total})`;
 });
 
-function actionClicked(actionId) {
-  if (actionId === "sanitize") {
-    documentPreviewModal.value.open();
+const uploading = ref(false);
+const processing = ref(false);
+const actionDefinitions = computed(() => [
+  {
+    id: "sanitize",
+    name: "Sanitize",
+    icon: "search",
+    kind: "primary",
+    busy: uploading.value,
+  },
+]);
+const sensitiveDataFound = ref({});
 
-    uploadDocx(uploadedFile.value[0].content)
-      .then((response) => {
-        console.log("File uploaded successfully:", response);
-        findSensitiveData(response.data.text, selectedCategories.value)
-          .then((sensitiveData) => {
-            console.log("Sensitive data found:", sensitiveData);
-            return sensitiveData;
-          })
-          .catch((error) => {
-            console.error("Error finding sensitive data:", error);
-          });
-        sampleMarkdown.value = response.data.text;
-      })
-      .then((sensitiveData) => {
-        console.log("Sensitive data found:", sensitiveData);
-      })
-      .catch((error) => {
-        console.error("Error sanitizing document:", error);
-      });
+async function actionClicked(actionId) {
+  if (actionId === "sanitize") {
+    const isFormCorrect = await v.value.$validate();
+    if (!isFormCorrect) {
+      notify.pushError(
+        "Please select at least one data category and select a document to sanitize",
+      );
+      return;
+    }
+
+    try {
+      uploading.value = true;
+      console.log(request.value);
+      const response = await uploadDocx(request.value.uploadedFile[0].content);
+      uploading.value = false;
+
+      processing.value = true;
+      documentPreviewModal.value.open();
+      const sensitiveData = await findSensitiveData(
+        response.data.text,
+        selectedCategories.value,
+      );
+      processing.value = false;
+      sensitiveDataFound.value = sensitiveData.data;
+      console.log("Sensitive data found:", sensitiveData);
+    } catch (error) {
+      console.error("Validation error:", error);
+      notify.pushError(
+        "Please select at least one data category and select a document to sanitize",
+      );
+      return;
+    } finally {
+      v.value.$reset();
+      processing.value = false;
+      uploading.value = false;
+    }
   }
 }
 
-watch(
-  () => uploadedFile.value,
-  (newFile) => {
-    console.log("File uploaded:", newFile);
-  },
-);
+function firstErrorMessage(errors) {
+  if (errors && errors.length > 0) {
+    return errors[0].$message;
+  }
+  return "";
+}
 
 onMounted(async () => {});
 </script>
@@ -154,19 +194,13 @@ onMounted(async () => {});
         :column-count="1"
         :show-header="false"
         @button-click="actionClicked"
-        :action-definitions="[
-          {
-            id: 'sanitize',
-            name: 'Sanitize',
-            icon: 'search',
-            kind: 'primary',
-          },
-        ]"
+        :action-definitions="actionDefinitions"
         class="dashboard-form"
       >
         <LxRow label="Document">
           <LxFileUploader
-            v-model="uploadedFile"
+            kind="single"
+            v-model="request.uploadedFile"
             draggable
             class="file-drop-area"
           />
@@ -185,9 +219,13 @@ onMounted(async () => {});
               :has-search="true"
               :items="categories"
               variant="tags"
-              v-model="selectedCategories"
+              v-model="request.selectedCategories"
               kind="multiple"
               :has-select-all="true"
+              :invalid="v.selectedCategories.$errors?.length > 0"
+              :invalidation-message="
+                firstErrorMessage(v.selectedCategories.$errors)
+              "
             />
           </LxRow>
         </LxExpander>
@@ -196,12 +234,16 @@ onMounted(async () => {});
         size="l"
         id="documentPreviewModal"
         ref="documentPreviewModal"
-        label="Reviewing document..."
+        :label="processing ? 'Processing document...' : 'Result'"
       >
-        <LxRichTextDisplay
-          id="documentPreviewRichText"
-          :value="sampleMarkdown"
-        />
+        {{ processing }}
+        <LxLoaderView
+          :loading="processing"
+          :label="'Processing...'"
+          :description="'Please wait while document is being processed'"
+        >
+          {{ sensitiveDataFound }}
+        </LxLoaderView>
       </LxModal>
     </main>
   </div>
@@ -217,6 +259,7 @@ onMounted(async () => {});
   overflow: hidden;
   margin-top: 1.5rem;
 }
+
 .dashboard-sidebar {
   flex: 0 0 320px;
   background: #fff;
@@ -226,20 +269,24 @@ onMounted(async () => {});
   flex-direction: column;
   justify-content: flex-start;
 }
+
 .dashboard-sidebar h2 {
   font-size: 1.5rem;
   margin-bottom: 1rem;
   color: #2d3a4a;
 }
+
 .dashboard-sidebar p {
   color: #5a6a7a;
   margin-bottom: 1.5rem;
 }
+
 .dashboard-sidebar ul {
   color: #4a5a6a;
   padding-left: 1.2em;
   margin: 0;
 }
+
 .dashboard-main {
   flex: 1 1 0;
   padding: 2.5rem 3rem;
@@ -248,6 +295,7 @@ onMounted(async () => {});
   align-items: center;
   background: #f8f9fb;
 }
+
 .dashboard-form {
   width: 100%;
   max-width: 540px;
@@ -257,6 +305,7 @@ onMounted(async () => {});
   padding: 0;
   overflow: auto;
 }
+
 .file-drop-area {
   border: 2px dashed #b6c2d1;
   border-radius: 8px;
@@ -268,15 +317,18 @@ onMounted(async () => {});
   position: relative;
   margin-top: 0.5rem;
 }
+
 .file-drop-text {
   color: #7a8ca3;
   font-size: 0.95rem;
   margin-top: 0.75rem;
 }
+
 @media (max-width: 900px) {
   .dashboard-container {
     flex-direction: column;
   }
+
   .dashboard-sidebar {
     border-right: none;
     border-bottom: 1px solid #ececec;
@@ -284,9 +336,11 @@ onMounted(async () => {});
     width: 100%;
     padding: 1.5rem 1rem;
   }
+
   .dashboard-main {
     padding: 1.5rem 1rem;
   }
+
   .dashboard-form {
     padding: 0;
   }

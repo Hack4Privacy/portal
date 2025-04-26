@@ -4,7 +4,7 @@ export function uploadDocx(file) {
   const formData = new FormData();
   formData.append("stream", file);
 
-  return http().post("/parse-docx", formData, {
+  return http().post("/parse/docx", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -17,7 +17,7 @@ export function replaceDocx(file, pattern, replacement) {
   formData.append("pattern", pattern);
   formData.append("replacement", replacement);
 
-  return http().post("/replace-docx", formData, {
+  return http().post("/redact/docx", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
