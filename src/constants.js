@@ -9,10 +9,10 @@ export const APP_CONFIG = {
   clientId: window.config.clientId,
   // @ts-ignore
   environment: window.config.environment,
-  defaultLocale: 'lv',
-  supportedLocales: ['lv'],
-  fallbackLocale: 'lv',
+  defaultLocale: "lv",
+  supportedLocales: ["lv"],
+  fallbackLocale: "lv",
 };
 
-export const AUTH_KEY_TOKEN_SESSION = 'privaseek-sessionkey';
-export const SYSTEM_NAME = 'privaseek';
+export const AUTH_KEY_TOKEN_SESSION = "privaseek-sessionkey";
+export const SYSTEM_NAME = "privaseek";

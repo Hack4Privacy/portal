@@ -71,6 +71,38 @@
   gap: 1rem;
 }
 
+.lx-layout {
+  background-color: rgba(0, 0, 120, 0.025);
+}
+
+.lx-layout.lx-layout-public>header>.lx-header .lx-main-button {
+  margin-bottom: 3px;
+}
+
+.lx-layout.lx-layout-public>header>.lx-header .lx-main-button:hover {
+  background-color: rgba(10, 10, 68, 0.03) !important;
+}
+
+.data-categories .lx-tag {
+  padding: 8px !important;
+  padding-block: 2px !important;
+  height: 2rem !important;
+}
+
+.data-categories .lx-row-header {
+  height: 0px;
+}
+
+.lx-draggable-upload-wrapper {
+  height: 120px;
+  align-items: center;
+  border-radius: 4px;
+}
+
+.lx-layout > header {
+  border-color: #3370b5 !important;
+}
+
 @media (max-width: 800px) {
   .footer-sitemap {
     flex-direction: column;

@@ -1,17 +1,17 @@
 <script setup>
-import { computed, ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useI18n } from 'vue-i18n';
-import { LxShell, LxSiteMap, LxIcon } from '@wntr/lx-ui';
-import { invoke, until, useIdle, useIntervalFn } from '@vueuse/core';
+import { computed, ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import { LxShell, LxSiteMap, LxIcon } from "@wntr/lx-ui";
+import { invoke, until, useIdle, useIntervalFn } from "@vueuse/core";
 
-import LoginView from '@/views/Login.vue';
-import useErrors from '@/hooks/useErrors';
-import useAuthStore from '@/stores/useAuthStore';
-import useAppStore from '@/stores/useAppStore';
-import useNotifyStore from '@/stores/useNotifyStore';
-import useConfirmStore from '@/stores/useConfirmStore';
-import useViewStore from '@/stores/useViewStore';
+import LoginView from "@/views/Login.vue";
+import useErrors from "@/hooks/useErrors";
+import useAuthStore from "@/stores/useAuthStore";
+import useAppStore from "@/stores/useAppStore";
+import useNotifyStore from "@/stores/useNotifyStore";
+import useConfirmStore from "@/stores/useConfirmStore";
+import useViewStore from "@/stores/useViewStore";
 
 const authStore = useAuthStore();
 const notify = useNotifyStore();
@@ -36,15 +36,17 @@ const { t } = useI18n();
 const route = useRoute();
 const routes = router.getRoutes();
 const shellMode = computed(() => {
-  let ret = 'public';
-  if (route.name === 'home') {
-    ret = 'cover';
+  let ret = "public";
+  if (route.name === "home") {
+    ret = "cover";
   }
   return ret;
 });
 
-const systemName = computed(() => i18n.t('title.shortName'));
-const pageTitle = computed(() => i18n.t(String(router.currentRoute.value.meta.title)));
+const systemName = computed(() => i18n.t("title.shortName"));
+const pageTitle = computed(() =>
+  i18n.t(String(router.currentRoute.value.meta.title)),
+);
 
 const breadcrumbs = computed(() => {
   const ret = [];
@@ -118,7 +120,7 @@ async function logout() {
     if (resp.status === 200 && resp.data) {
       window.location.href = resp.data;
     } else {
-      notify.pushSuccess(i18n.t('shell.notifications.logOut'));
+      notify.pushSuccess(i18n.t("shell.notifications.logOut"));
     }
   } catch (err) {
     const error = errors.get(err);
@@ -127,7 +129,7 @@ async function logout() {
     }
   } finally {
     closeModal();
-    router.push({ name: 'sessionEnded' });
+    router.push({ name: "sessionEnded" });
   }
 }
 
@@ -141,12 +143,12 @@ function secondary() {
 
 function openConfirmModal() {
   confirmStore.push(
-    i18n.t('shell.notifications.logoutConfirmTitle'),
-    i18n.t('shell.notifications.logoutConfirm'),
-    i18n.t('shell.notifications.logoutConfirmYes'),
-    i18n.t('shell.notifications.logoutConfirmNo'),
+    i18n.t("shell.notifications.logoutConfirmTitle"),
+    i18n.t("shell.notifications.logoutConfirm"),
+    i18n.t("shell.notifications.logoutConfirmYes"),
+    i18n.t("shell.notifications.logoutConfirmNo"),
     primary,
-    secondary
+    secondary,
   );
 }
 
@@ -192,7 +194,7 @@ useIntervalFn(() => {
   if (!authStore.session.active) {
     if (idleModalOpened.value) {
       closeModal();
-      router.push({ name: 'sessionEnded' });
+      router.push({ name: "sessionEnded" });
     }
     return;
   }
@@ -209,9 +211,11 @@ useIntervalFn(() => {
     closeModal();
     return;
   }
-  const refreshIntervals = authStore.session.secondsToLive % secondsCheckApiInterval === 0;
+  const refreshIntervals =
+    authStore.session.secondsToLive % secondsCheckApiInterval === 0;
   const refreshBeforeWarn =
-    authStore.session.secondsToLive - 3 < authStore.session.secondsToCountdown && !idle.value;
+    authStore.session.secondsToLive - 3 <
+      authStore.session.secondsToCountdown && !idle.value;
   const refreshBeforeLogout = authStore.session.secondsToLive === 3;
   if (refreshIntervals || refreshBeforeWarn || refreshBeforeLogout) {
     checkApiSession();
@@ -222,9 +226,9 @@ useIntervalFn(() => {
 async function continueSession() {
   try {
     await authStore.keepAlive();
-    notify.pushSuccess(i18n.t('shell.notifications.sessionContinued'));
+    notify.pushSuccess(i18n.t("shell.notifications.sessionContinued"));
   } catch (err) {
-    notify.pushError(i18n.t('shell.notifications.sessionContinuedFailed'));
+    notify.pushError(i18n.t("shell.notifications.sessionContinuedFailed"));
     if (err.response.status === 401) {
       logout();
     }
@@ -236,7 +240,7 @@ async function continueSession() {
 invoke(async () => {
   // @ts-ignore
   await until(() => authStore.showSessionEndCountdown).toBe(true);
-  notify.pushWarning(i18n.t('shell.notifications.sessionEndingSoon'));
+  notify.pushWarning(i18n.t("shell.notifications.sessionEndingSoon"));
 });
 
 function idleModalPrimary() {
@@ -281,7 +285,54 @@ function idleModalSecondary() {
         @idleModalSecondary="idleModalSecondary"
       >
         <template #backdrop>
-          <CoverBackground />
+          <div class="lx-backdrop">
+            <svg
+              class="wavy-bg"
+              viewBox="0 0 1440 320"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              preserveAspectRatio="none"
+            >
+              <defs>
+                <linearGradient id="waveGradient1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#223A5E" stop-opacity="0.6" />
+                  <stop offset="100%" stop-color="#1B2845" stop-opacity="0.6" />
+                </linearGradient>
+                <linearGradient id="waveGradient2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#2B4865" stop-opacity="0.5" />
+                  <stop offset="100%" stop-color="#16305A" stop-opacity="0.5" />
+                </linearGradient>
+                <linearGradient id="waveGradient3" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#304269" stop-opacity="0.4" />
+                  <stop offset="100%" stop-color="#1A263B" stop-opacity="0.4" />
+                </linearGradient>
+                <linearGradient id="waveGradient4" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#1C2541" stop-opacity="0.3" />
+                  <stop offset="100%" stop-color="#0B132B" stop-opacity="0.3" />
+                </linearGradient>
+              </defs>
+              <path
+                class="wave-path wave1"
+                fill="url(#waveGradient1)"
+                d="M0,320 C360,340 1080,300 1440,320 L1440,320 L0,320 Z"
+              />
+              <path
+                class="wave-path wave2"
+                fill="url(#waveGradient2)"
+                d="M0,330 C360,350 1080,310 1440,330 L1440,320 L0,320 Z"
+              />
+              <path
+                class="wave-path wave3"
+                fill="url(#waveGradient3)"
+                d="M0,340 C360,360 1080,320 1440,340 L1440,320 L0,320 Z"
+              />
+              <path
+                class="wave-path wave4"
+                fill="url(#waveGradient4)"
+                d="M0,350 C360,370 1080,330 1440,350 L1440,320 L0,320 Z"
+              />
+            </svg>
+          </div>
         </template>
         <template #coverArea>
           <div class="lx-button-set">
@@ -295,14 +346,22 @@ function idleModalSecondary() {
                 <LxIcon value="zz-lx" icon-set="brand" />
                 <p>Demo portāls</p>
               </div>
-              <p class="footer-sitemap-text">LX komponenšu un moduļu demo portāls</p>
+              <p class="footer-sitemap-text">
+                LX komponenšu un moduļu demo portāls
+              </p>
             </div>
             <div class="footer-sitemap-item">
-              <LxSiteMap :routes="routes" category="useful" label="Noderīgi" :translator="t" />
+              <LxSiteMap
+                :routes="routes"
+                category="useful"
+                label="Noderīgi"
+                :translator="t"
+              />
             </div>
             <div class="footer-sitemap-right">
               <p class="footer-sitemap-text">
-                Demo portāls ir paredzēts LX komponenšu un moduļu demonstrēšanai.
+                Demo portāls ir paredzēts LX komponenšu un moduļu
+                demonstrēšanai.
               </p>
               <p class="footer-sitemap-text">Versija 0.1.11 20.12.2022</p>
             </div>
@@ -346,3 +405,97 @@ function idleModalSecondary() {
     </div>
   </div>
 </template>
+
+<style scoped>
+.lx-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  background-color: rgba(0, 0, 120, 0.025);
+  justify-content: center;
+  align-items: center;
+}
+
+.wavy-bg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+.wave-path {
+  /* Default animation, overridden per wave */
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.wave1 {
+  animation-name: wave1-animation;
+  animation-duration: 14s;
+  animation-delay: 0s;
+}
+.wave2 {
+  animation-name: wave2-animation;
+  animation-duration: 11s;
+  animation-delay: -2s;
+}
+.wave3 {
+  animation-name: wave3-animation;
+  animation-duration: 17s;
+  animation-delay: -4s;
+}
+.wave4 {
+  animation-name: wave4-animation;
+  animation-duration: 13s;
+  animation-delay: -6s;
+}
+
+@keyframes wave1-animation {
+  0% {
+    d: path("M0,240 C360,260 1080,220 1440,240 L1440,360 L0,360 Z");
+  }
+  50% {
+    d: path("M0,245 C360,250 1080,230 1440,245 L1440,360 L0,360 Z");
+  }
+  100% {
+    d: path("M0,240 C360,260 1080,220 1440,240 L1440,360 L0,360 Z");
+  }
+}
+@keyframes wave2-animation {
+  0% {
+    d: path("M0,250 C360,270 1080,230 1440,250 L1440,360 L0,360 Z");
+  }
+  50% {
+    d: path("M0,255 C360,265 1080,240 1440,255 L1440,360 L0,360 Z");
+  }
+  100% {
+    d: path("M0,250 C360,270 1080,230 1440,250 L1440,360 L0,360 Z");
+  }
+}
+@keyframes wave3-animation {
+  0% {
+    d: path("M0,260 C360,280 1080,240 1440,260 L1440,360 L0,360 Z");
+  }
+  50% {
+    d: path("M0,265 C360,275 1080,250 1440,265 L1440,360 L0,360 Z");
+  }
+  100% {
+    d: path("M0,260 C360,280 1080,240 1440,260 L1440,360 L0,360 Z");
+  }
+}
+@keyframes wave4-animation {
+  0% {
+    d: path("M0,270 C360,290 1080,250 1440,270 L1440,360 L0,360 Z");
+  }
+  50% {
+    d: path("M0,275 C360,285 1080,260 1440,275 L1440,360 L0,360 Z");
+  }
+  100% {
+    d: path("M0,270 C360,290 1080,250 1440,270 L1440,360 L0,360 Z");
+  }
+}
+</style>
