@@ -1,14 +1,7 @@
 <script setup>
-import { LxButton } from '@wntr/lx-ui';
-import { useI18n } from 'vue-i18n';
-
-const i18n = useI18n();
+import { LxButton } from "@wntr/lx-ui";
 </script>
 
 <template>
-  <LxButton
-    :href="{ name: 'dashboard' }"
-    :label="i18n.t('pages.home.buttons.loginAuthorized')"
-    icon="dashboard"
-  />
+  <LxButton :href="{ name: 'dashboard' }" label="Go to Demo" icon="dashboard" />
 </template>

@@ -11,16 +11,16 @@ export function uploadDocx(file) {
   });
 }
 
-export function replaceDocx(file, pattern, replacement) {
+export function replaceDocx(file, replacements) {
   const formData = new FormData();
   formData.append("stream", file);
-  formData.append("pattern", pattern);
-  formData.append("replacement", replacement);
+  formData.append("data", JSON.stringify(replacements));
 
   return http().post("/redact/docx", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
+    responseType: "blob", // Ensure we get a Blob for file download
   });
 }
 
