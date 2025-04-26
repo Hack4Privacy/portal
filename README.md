@@ -1,8 +1,8 @@
-# `PrivaSeek`
+# `OopsieGuard`
 
 <!-- TOC -->
 
-- [`PrivaSeek`](#privaseek)
+- [`OopsieGuard`](#oopsieguard)
   - [Development](#development)
   - [Requirements](#requirements)
   - [Customize configuration](#customize-configuration)

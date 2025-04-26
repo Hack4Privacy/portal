@@ -24,11 +24,12 @@ export function replaceDocx(file, pattern, replacement) {
   });
 }
 
-export function findSensitiveData(text) {
+export function findSensitiveData(text, categories) {
   // Patch: send the text as a Blob file so the backend can process it as a file
   const formData = new FormData();
   const blob = new Blob([text], { type: "text/markdown" });
   formData.append("stream", blob, "document.md");
+  formData.append("categories", categories);
 
   return http().post("/data", formData, {
     headers: {

@@ -74,7 +74,7 @@ const categories = ref([
   },
 ]);
 
-const selectedCategory = ref([
+const selectedCategories = ref([
   "personCode",
   "socialSecurityNumbers",
   "medicalRecords",
@@ -91,7 +91,7 @@ const sampleMarkdown = ref("");
 const documentPreviewModal = ref(null);
 const filterCategoriesText = computed(() => {
   const total = categories.value.length;
-  const selected = selectedCategory.value.length;
+  const selected = selectedCategories.value.length;
   return `Select sensitive data types to scan for (${selected} of ${total})`;
 });
 
@@ -102,7 +102,15 @@ function actionClicked(actionId) {
     uploadDocx(uploadedFile.value[0].content)
       .then((response) => {
         console.log("File uploaded successfully:", response);
-        findSensitiveData(response.data.text);
+        findSensitiveData(response.data.text, selectedCategories.value)
+          .then((sensitiveData) => {
+            console.log("Sensitive data found:", sensitiveData);
+            return sensitiveData;
+          })
+          .catch((error) => {
+            console.error("Error finding sensitive data:", error);
+          });
+        sampleMarkdown.value = response.data.text;
       })
       .then((sensitiveData) => {
         console.log("Sensitive data found:", sensitiveData);
@@ -120,14 +128,7 @@ watch(
   },
 );
 
-onMounted(async () => {
-  try {
-    const response = await fetch("/sample.md");
-    sampleMarkdown.value = await response.text();
-  } catch (error) {
-    console.error("Failed to load sample markdown:", error);
-  }
-});
+onMounted(async () => {});
 </script>
 
 <template>
@@ -184,7 +185,7 @@ onMounted(async () => {
               :has-search="true"
               :items="categories"
               variant="tags"
-              v-model="selectedCategory"
+              v-model="selectedCategories"
               kind="multiple"
               :has-select-all="true"
             />

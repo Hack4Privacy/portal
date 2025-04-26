@@ -1,10 +1,10 @@
 {
   "title": {
     "prefix": "",
-    "fullName": "PrivaSeek",
-    "subheader": "Sensitive data diaper",
-    "shortName": "PrivaSeek",
-    "default": "PrivaSeek"
+    "fullName": "OopsieGuard",
+    "subheader": "Preventing leaks, saving cheeks",
+    "shortName": "OopsieGuard",
+    "default": "OopsieGuard"
   },
   "shell": {
     "notifications": {
@@ -21,7 +21,7 @@
   },
   "pages": {
     "home": {
-      "title": "PrivaSeek",
+      "title": "OopsieGuard",
       "buttons": {
         "loginAuthorized": "Iet uz sākumu",
         "loginUnauthorized": "Autorizēties"

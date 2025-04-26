@@ -14,5 +14,5 @@ export const APP_CONFIG = {
   fallbackLocale: "lv",
 };
 
-export const AUTH_KEY_TOKEN_SESSION = "privaseek-sessionkey";
-export const SYSTEM_NAME = "privaseek";
+export const AUTH_KEY_TOKEN_SESSION = "OopsieGuard-sessionkey";
+export const SYSTEM_NAME = "OopsieGuard";
