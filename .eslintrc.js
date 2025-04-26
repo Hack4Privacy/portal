@@ -1,15 +1,18 @@
 module.exports = {
-  ignorePatterns: ['jsconfig.js'],
+  ignorePatterns: ["jsconfig.js"],
   settings: {
-    'import/resolver': {
+    "import/resolver": {
       node: {
-        extensions: ['.js', '.jsx', '.ts', '.tsx', '.vue'],
+        extensions: [".js", ".jsx", ".ts", ".tsx", ".vue"],
       },
       alias: {
-        extensions: ['.js', '.vue'],
+        extensions: [".js", ".vue"],
         map: [
-          ['@', './src'],
-          ['@wntr/lx-ui/vite', './node_modules/@wntr/lx-ui/dist/vite/wntr-lx-ui-vite.es.js'],
+          ["@", "./src"],
+          [
+            "@wntr/lx-ui/vite",
+            "./node_modules/@wntr/lx-ui/dist/vite/wntr-lx-ui-vite.es.js",
+          ],
         ],
       },
     },
@@ -19,43 +22,44 @@ module.exports = {
     es2021: true,
   },
   extends: [
-    'plugin:vue/vue3-essential',
-    'eslint:recommended',
-    '@vue/eslint-config-prettier',
-    'airbnb-base',
-    'plugin:import/recommended',
-    'plugin:import/errors',
-    'prettier',
+    "plugin:vue/vue3-essential",
+    "eslint:recommended",
+    "@vue/eslint-config-prettier",
+    "airbnb-base",
+    "plugin:import/recommended",
+    "plugin:import/errors",
+    "prettier",
   ],
   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: './jsconfig.json',
+    ecmaVersion: "latest",
+    sourceType: "module",
+    project: "./jsconfig.json",
   },
-  plugins: ['vue', 'prettier'],
+  plugins: ["vue", "prettier"],
   rules: {
-    'prettier/prettier': ['error'],
-    'no-restricted-imports': [
-      'error',
+    "prettier/prettier": ["error"],
+    "no-restricted-imports": [
+      "error",
       {
-        patterns: ['.*'],
+        patterns: [".*"],
       },
     ],
-    'vue/html-indent': ['off'], // leave it to prettier
-    'vue/multi-word-component-names': 'off',
-    'vuejs-accessibility/label-has-for': 'off',
-    'no-param-reassign': ['error', { props: true, ignorePropertyModificationsFor: ['state'] }],
-    // use ' instead of "
-    quotes: ['error', 'single'],
+    "vue/html-indent": ["off"], // leave it to prettier
+    "vue/multi-word-component-names": "off",
+    "vuejs-accessibility/label-has-for": "off",
+    "no-param-reassign": [
+      "error",
+      { props: true, ignorePropertyModificationsFor: ["state"] },
+    ],
     // use 2 spaces for indentation
-    indent: ['off'], // leave it to prettier
+    indent: ["off"], // leave it to prettier
     // prefer non-default exports
-    'import/prefer-default-export': 'off',
+    "import/prefer-default-export": "off",
   },
   globals: {
-    defineProps: 'readonly',
-    defineEmits: 'readonly',
-    defineExpose: 'readonly',
-    withDefaults: 'readonly',
+    defineProps: "readonly",
+    defineEmits: "readonly",
+    defineExpose: "readonly",
+    withDefaults: "readonly",
   },
 };

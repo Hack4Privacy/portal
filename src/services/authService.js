@@ -1,16 +1,16 @@
-import { apiAuth } from '@/apiAuth';
-import { APP_CONFIG } from '@/constants';
+import { apiAuth } from "@/apiAuth";
+import { APP_CONFIG } from "@/constants";
 
 export function session() {
-  return apiAuth().get('/api/1.0/session');
+  return apiAuth().get("/api/1.0/session");
 }
 
 export function keepAlive() {
-  return apiAuth().get('/api/1.0/session/keep-alive');
+  return apiAuth().get("/api/1.0/session/keep-alive");
 }
 
 export async function logout() {
-  await apiAuth().delete('/api/1.0/session');
+  await apiAuth().delete("/api/1.0/session");
 }
 
 /**
@@ -26,9 +26,9 @@ export async function logout() {
  * @throws {Error} If there is an error during the token issue process.
  */
 export async function startSession(ott) {
-  return apiAuth({ allowAnonymous: true }).post('/1.0/token', {
+  return apiAuth({ allowAnonymous: true }).post("/1.0/token", {
     code: ott,
     client_id: APP_CONFIG.clientId,
-    grant_type: 'authorization_code',
+    grant_type: "authorization_code",
   });
 }

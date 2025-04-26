@@ -1,6 +1,6 @@
-import axios from 'axios';
-import { APP_CONFIG } from '@/constants';
-import { getSessionKey } from '@/utils/sessionUtils';
+import axios from "axios";
+import { APP_CONFIG } from "@/constants";
+import { getSessionKey } from "@/utils/sessionUtils";
 
 /**
  *
@@ -13,8 +13,8 @@ export default () => {
     baseURL: APP_CONFIG.apiUrl,
     withCredentials: true,
     headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
+      Accept: "application/json",
+      "Content-Type": "application/json",
       Authorization: `Bearer ${getSessionKey()}`,
     },
   });
