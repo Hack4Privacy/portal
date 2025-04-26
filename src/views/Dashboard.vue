@@ -8,7 +8,6 @@ import useNotifyStore from "@/stores/useNotifyStore";
 import { useVuelidate } from "@vuelidate/core";
 import { required } from "@vuelidate/validators";
 import {
-  LxButton,
   LxExpander,
   LxFileUploader,
   LxForm,
