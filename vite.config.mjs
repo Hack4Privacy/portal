@@ -18,10 +18,10 @@ import { devServerSettings } from "./vite.config.server.mjs";
 dns.setDefaultResultOrder("ipv4first");
 
 const CONFIG = {
-  appName: "OopsieGuard",
+  appName: "Oopsie Guard",
   appDescription: "Preventing leaks, saving cheeks",
   defaultUrl: "https://localhost:44341/",
-  defaultClient: "OopsieGuard",
+  defaultClient: "Oopsie Guard",
 };
 
 const getEnvVariables = (mode, serving) => {

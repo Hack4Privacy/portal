@@ -1,19 +1,18 @@
 <script setup>
+import { findSensitiveData, uploadDocx } from "@/services/fileService";
+import useNotifyStore from "@/stores/useNotifyStore";
+import { useVuelidate } from "@vuelidate/core";
+import { required } from "@vuelidate/validators";
 import {
   LxExpander,
   LxFileUploader,
   LxForm,
   LxLoaderView,
   LxModal,
-  LxRichTextDisplay,
   LxRow,
   LxValuePicker,
 } from "@wntr/lx-ui";
-import { ref, computed, onMounted, watch } from "vue";
-import { uploadDocx, findSensitiveData } from "@/services/fileService";
-import useNotifyStore from "@/stores/useNotifyStore";
-import { useVuelidate } from "@vuelidate/core";
-import { required } from "@vuelidate/validators";
+import { computed, onMounted, ref } from "vue";
 
 const notify = useNotifyStore();
 
@@ -22,90 +21,76 @@ const rules = computed(() => ({
   uploadedFile: { required },
 }));
 const request = ref({
-  selectedCategories: [],
+  selectedCategories: [
+    "Personal ID codes, Social security numbers",
+    "Names, Surnames",
+    "Email addresses",
+    "IP addresses",
+  ],
   uploadedFile: null,
 });
 const v = useVuelidate(rules, request);
 const categories = ref([
   {
-    id: "personCode",
+    id: "Personal ID codes, Social security numbers",
     name: "Personal ID codes",
   },
   {
-    id: "namesSurnames",
+    id: "Names, Surnames",
     name: "Names, Surnames",
   },
   {
-    id: "phoneNumbers",
+    id: "Phone numbers",
     name: "Phone numbers",
   },
   {
-    id: "emailAddresses",
+    id: "Email addresses",
     name: "Email addresses",
   },
   {
-    id: "fullAddresses",
+    id: "Full addresses or Location data",
     name: "Full addresses",
   },
   {
-    id: "bankAccountNumbers",
+    id: "Bank account numbers",
     name: "Bank account numbers",
   },
   {
-    id: "creditCardNumbers",
+    id: "Credit card numbers",
     name: "Credit card numbers",
   },
   {
-    id: "passportNumbers",
+    id: "Passport or ID document numbers",
     name: "Passport or ID document numbers",
   },
   {
-    id: "socialSecurityNumbers",
-    name: "Social security numbers",
-  },
-  {
-    id: "medicalRecords",
+    id: "Medical records or health information",
     name: "Medical records or health information",
   },
   {
-    id: "financialInformation",
+    id: "Financial information",
     name: "Financial information",
   },
   {
-    id: "locationData",
-    name: "Location data",
-  },
-  {
-    id: "biometricData",
+    id: "Biometric data reference",
     name: "Biometric data references",
   },
   {
-    id: "ipAddresses",
+    id: "IP addresses",
     name: "IP addresses",
   },
   {
-    id: "loginCredentials",
+    id: "Login credentials",
     name: "Login credentials",
   },
 ]);
 
-const selectedCategories = ref([
-  "personCode",
-  "socialSecurityNumbers",
-  "medicalRecords",
-  "creditCardNumbers",
-  "bankAccountNumbers",
-  "loginCredentials",
-  "biometricData",
-]);
-
 const expanderOpen = ref(true);
 
-const sampleMarkdown = ref("");
-const documentPreviewModal = ref(null);
+const resultModal = ref(null);
 const filterCategoriesText = computed(() => {
   const total = categories.value.length;
-  const selected = selectedCategories.value.length;
+  const selected = request.value.selectedCategories.length;
   return `Select sensitive data types to scan for (${selected} of ${total})`;
 });
 
@@ -120,7 +105,12 @@ const actionDefinitions = computed(() => [
     busy: uploading.value,
   },
 ]);
-const sensitiveDataFound = ref({});
+const sensitiveDataFound = ref({
+  data: {
+    contains_personal_data: false,
+    personal_data_found: [{ sensitivity: "", type: "", values: [] }],
+  },
+});
 
 async function actionClicked(actionId) {
   if (actionId === "sanitize") {
@@ -139,10 +129,10 @@ async function actionClicked(actionId) {
       uploading.value = false;
 
       processing.value = true;
-      documentPreviewModal.value.open();
+      resultModal.value.open();
       const sensitiveData = await findSensitiveData(
         response.data.text,
-        selectedCategories.value,
+        request.value.selectedCategories,
       );
       processing.value = false;
       sensitiveDataFound.value = sensitiveData.data;
@@ -233,16 +223,35 @@ onMounted(async () => {});
       <LxModal
         size="l"
         id="documentPreviewModal"
-        ref="documentPreviewModal"
+        ref="resultModal"
         :label="processing ? 'Processing document...' : 'Result'"
       >
-        {{ processing }}
         <LxLoaderView
           :loading="processing"
           :label="'Processing...'"
           :description="'Please wait while document is being processed'"
         >
-          {{ sensitiveDataFound }}
+          <p v-if="!sensitiveDataFound.data.contains_personal_data">
+            No sensitive data found
+          </p>
+          <div v-if="sensitiveDataFound.data.contains_personal_data">
+            <h3>Detected sensitive data:</h3>
+            <ul>
+              <li
+                v-for="(item, index) in sensitiveDataFound.data
+                  .personal_data_found"
+                :key="index"
+              >
+                <strong>{{ item.sensitivity }}</strong
+                >: {{ item.type }}
+                <ul>
+                  <li v-for="(value, index) in item.values" :key="index">
+                    {{ value }}
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
         </LxLoaderView>
       </LxModal>
     </main>

@@ -1,8 +1,8 @@
-# `OopsieGuard`
+# `Oopsie Guard`
 
 <!-- TOC -->
 
-- [`OopsieGuard`](#oopsieguard)
+- [`Oopsie Guard`](#oopsie-guard)
   - [Development](#development)
   - [Requirements](#requirements)
   - [Customize configuration](#customize-configuration)
