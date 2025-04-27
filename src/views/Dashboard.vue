@@ -1,8 +1,8 @@
 <script setup>
 import {
   findSensitiveData,
-  uploadDocx,
   replaceDocx,
+  uploadDocx,
 } from "@/services/fileService";
 import useNotifyStore from "@/stores/useNotifyStore";
 import { useVuelidate } from "@vuelidate/core";
@@ -27,9 +27,9 @@ const rules = computed(() => ({
 const request = ref({
   selectedCategories: [
     "Personal ID codes, Social security numbers",
+    "Phone numbers",
     "Names, Surnames",
     "Email addresses",
-    "IP addresses",
   ],
   uploadedFile: null,
 });
@@ -100,6 +100,25 @@ const filterCategoriesText = computed(() => {
   return `Select sensitive data types to scan for (${selected} of ${total})`;
 });
 
+const uploading = ref(false);
+const processing = ref(false);
+const downloading = ref(false);
+const actionDefinitions = computed(() => [
+  {
+    id: "sanitize",
+    name: "Check for oopsies",
+    icon: "search-details",
+    kind: "primary",
+    busy: uploading.value,
+  },
+]);
+const sensitiveDataFound = ref({
+  data: {
+    contains_personal_data: false,
+    personal_data_found: [{ sensitivity: "", type: "", values: [] }],
+  },
+});
+
 const detectedSensitiveDataText = computed(() => {
   const findings = sensitiveDataFound.value.data?.personal_data_found || [];
   const counts = { high: 0, medium: 0, low: 0 };
@@ -120,30 +139,12 @@ const detectedSensitiveDataText = computed(() => {
   return parts.length ? `Detected data (${parts.join(", ")})` : "Detected data";
 });
 
-const uploading = ref(false);
-const processing = ref(false);
-const actionDefinitions = computed(() => [
-  {
-    id: "sanitize",
-    name: "Sanitize",
-    icon: "search",
-    kind: "primary",
-    busy: uploading.value,
-  },
-]);
-const sensitiveDataFound = ref({
-  data: {
-    contains_personal_data: false,
-    personal_data_found: [{ sensitivity: "", type: "", values: [] }],
-  },
-});
-
 async function actionClicked(actionId) {
   if (actionId === "sanitize") {
     const isFormCorrect = await v.value.$validate();
     if (!isFormCorrect) {
       notify.pushError(
-        "Please select at least one data category and select a document to sanitize",
+        "Please select at least one data category and a document to check",
       );
       return;
     }
@@ -175,6 +176,12 @@ async function actionClicked(actionId) {
     }
   }
 }
+function secondaryActionClicked() {
+  resultModal.value.close();
+  v.value.$reset();
+  request.value.uploadedFile = null;
+  request.value = { ...request.value };
+}
 
 function firstErrorMessage(errors) {
   if (errors && errors.length > 0) {
@@ -184,9 +191,9 @@ function firstErrorMessage(errors) {
 }
 
 async function handleSanitizedFileDownload() {
+  downloading.value = true;
   try {
     const file = request.value.uploadedFile[0].content;
-    // Use the sensitiveDataFound data as replacements
     const replacements =
       sensitiveDataFound.value.data.personal_data_found || [];
     const response = await replaceDocx(file, replacements);
@@ -209,6 +216,8 @@ async function handleSanitizedFileDownload() {
       "Download error",
       "An error occurred while downloading the sanitized document. Please try again later.",
     );
+  } finally {
+    downloading.value = false;
   }
 }
 
@@ -248,25 +257,23 @@ const sortedFindings = computed(() => {
 <template>
   <div class="dashboard-container">
     <aside class="dashboard-sidebar">
-      <h2>How this tool works</h2>
+      <h2>Quick Guide</h2>
       <p>
-        This is a demo implementation of Oopsie Guard. It's a proof of concept,
-        the actual underlying technology can be implemented in various ways -
-        directly into existing workflows and systems or as a standalone tool.
+        Oopsie Guard finds and removes sensitive info from your documents. Give
+        this demo a spin!
       </p>
       <ul>
-        <li>Upload your document on the right</li>
-        <li>Select sensitive data types to scan for</li>
-        <li>
-          Click Sanitize to preview detected data and download the sanitized
-          document
-        </li>
+        <li>Upload your .docx file</li>
+        <li>Choose data types to find</li>
+        <li>Click 'Check for oopsies' to see results & download</li>
       </ul>
       <br />
       <h2>What is Oopsie Guard?</h2>
       <p>
-        Oopsie Guard's service is an elastic, easily adaptable and configurable
-        solution for sensitive data detection and sanitization needs.
+        Oopsie Guard offers a flexible solution for detecting and redacting
+        sensitive data. While this demo is a proof of concept, the underlying
+        technology can be integrated into existing systems or used as a
+        standalone tool.
         <br />
         <br />
         We provide an easy-to-use interface for integration wherever you need
@@ -302,7 +309,6 @@ const sortedFindings = computed(() => {
             style="--color-content-switcher-foreground: #3370b5"
           >
             <LxValuePicker
-              label="Data categories"
               :has-search="true"
               :items="categories"
               variant="tags"
@@ -313,7 +319,8 @@ const sortedFindings = computed(() => {
               :invalidation-message="
                 firstErrorMessage(v.selectedCategories.$errors)
               "
-            />
+            >
+            </LxValuePicker>
           </LxRow>
         </LxExpander>
       </LxForm>
@@ -321,12 +328,16 @@ const sortedFindings = computed(() => {
         size="s"
         id="documentPreviewModal"
         ref="resultModal"
-        :label="processing ? 'Processing document...' : 'Result'"
+        :label="processing ? 'Processing document' : 'Result'"
         :button-primary-visible="
           !processing && !!sensitiveDataFound.data.contains_personal_data
         "
         button-primary-label="Download sanitized document"
+        :button-primary-busy="downloading"
         @primary-action="handleSanitizedFileDownload"
+        :button-secondary-label="'Try another document'"
+        :button-secondary-visible="!processing"
+        @secondary-action="secondaryActionClicked"
       >
         <LxLoaderView
           :loading="processing"
